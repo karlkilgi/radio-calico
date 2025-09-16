@@ -1,0 +1,369 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #E8E8E8;
+    color: #231F20;
+    line-height: 1.6;
+}
+
+.header {
+    background: #6B6B6B;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+}
+
+.site-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: #F5EADA;
+    letter-spacing: 0.1em;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.album-section {
+    position: relative;
+}
+
+.year-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #DC143C;
+    color: white;
+    padding: 8px 16px;
+    transform: rotate(45deg);
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    z-index: 10;
+}
+
+.album-art {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.track-section {
+    padding: 0;
+}
+
+.artist-name {
+    font-family: "Montserrat", sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #231F20;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.song-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #231F20;
+    margin-bottom: 24px;
+    line-height: 1.2;
+}
+
+.album-info {
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #231F20;
+    margin-bottom: 32px;
+}
+
+.quality-info {
+    margin-bottom: 24px;
+}
+
+.quality-line {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 4px;
+    font-style: italic;
+}
+
+.rating-section {
+    margin-bottom: 32px;
+}
+
+.rate-text {
+    font-size: 1rem;
+    color: #231F20;
+    margin-bottom: 12px;
+}
+
+.rating-buttons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.rating-button {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.rating-button:hover {
+    transform: scale(1.1);
+}
+
+.rating-button.active {
+    filter: brightness(1.2);
+}
+
+.rating-count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #231F20;
+}
+
+.player-controls {
+    background: #6B6B6B;
+    border-radius: 25px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.play-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.time-display {
+    color: white;
+    font-size: 1rem;
+    min-width: 80px;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.volume-icon {
+    color: white;
+    font-size: 1.25rem;
+}
+
+.volume-slider {
+    width: 100px;
+    height: 4px;
+    background: #999;
+    outline: none;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+.audio-controls {
+    display: none;
+}
+
+.status {
+    display: none;
+}
+
+.footer-section {
+    background: #D8F2D5;
+    padding: 40px 24px;
+    margin-top: 40px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #231F20;
+    margin-bottom: 24px;
+}
+
+.track-list {
+    list-style: none;
+}
+
+.track-list li {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #231F20;
+}
+
+.track-list .artist {
+    font-weight: 600;
+}
+
+.track-list .song {
+    font-style: italic;
+    color: #666;
+}
+
+.loading {
+    opacity: 0.7;
+    font-style: italic;
+    color: #666;
+}
+
+.loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #666;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader-large {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    color: #666;
+    font-style: italic;
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.shimmer-text {
+    height: 1.2em;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+
+.shimmer-title {
+    height: 2em;
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .artist-name {
+        font-size: 2.5rem;
+    }
+
+    .song-title {
+        font-size: 1.5rem;
+    }
+
+    .album-info {
+        font-size: 1.125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-title {
+        font-size: 1.5rem;
+    }
+
+    .artist-name {
+        font-size: 2rem;
+    }
+
+    .song-title {
+        font-size: 1.25rem;
+    }
+
+    .main-content {
+        padding: 24px 16px;
+    }
+
+    .player-controls {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}
