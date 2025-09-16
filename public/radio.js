@@ -22,6 +22,7 @@ class RadioPlayer {
         this.startTime = null;
         this.elapsedTimer = null;
         this.metadataTimer = null;
+        this.currentStreamQuality = null;
 
         this.init();
         this.initializeUserId();
@@ -58,6 +59,17 @@ class RadioPlayer {
 
             this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 console.log('HLS manifest parsed, ready to play');
+                this.updateStreamQuality();
+            });
+
+            this.hls.on(Hls.Events.LEVEL_SWITCHING, (event, data) => {
+                console.log('Switching to quality level:', data.level);
+                this.updateStreamQuality();
+            });
+
+            this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+                console.log('Switched to quality level:', data.level);
+                this.updateStreamQuality();
             });
 
             this.hls.on(Hls.Events.ERROR, (event, data) => {
@@ -70,6 +82,7 @@ class RadioPlayer {
         } else if (this.audio.canPlayType('application/vnd.apple.mpegurl')) {
             // Safari native HLS support
             this.audio.src = this.streamUrl;
+            this.updateStreamQualityForSafari();
         } else {
             this.updateStatus('HLS not supported in this browser', 'error');
         }
@@ -137,6 +150,60 @@ class RadioPlayer {
         }
     }
 
+    updateStreamQuality() {
+        if (this.hls && this.hls.levels && this.hls.levels.length > 0) {
+            const currentLevel = this.hls.currentLevel;
+            if (currentLevel >= 0) {
+                const level = this.hls.levels[currentLevel];
+                const bitrate = Math.round(level.bitrate / 1000);
+                const audioCodec = level.audioCodec || 'Unknown';
+                const sampleRate = level.audioSampleRate ? `${level.audioSampleRate / 1000}kHz` : '';
+                
+                let qualityText = `Stream quality: ${bitrate}kbps`;
+                
+                if (audioCodec.includes('flac')) {
+                    qualityText += ' FLAC';
+                } else if (audioCodec.includes('mp4a')) {
+                    qualityText += ' AAC';
+                }
+                
+                if (sampleRate) {
+                    qualityText += ` / ${sampleRate}`;
+                }
+                
+                qualityText += ' (HLS)';
+                
+                this.currentStreamQuality = qualityText;
+                if (this.streamQuality) {
+                    this.streamQuality.textContent = qualityText;
+                }
+            } else {
+                // Auto mode
+                const autoText = 'Stream quality: Auto (HLS)';
+                this.currentStreamQuality = autoText;
+                if (this.streamQuality) {
+                    this.streamQuality.textContent = autoText;
+                }
+            }
+        } else {
+            // Fallback for when HLS info is not available
+            const fallbackText = 'Stream quality: Adaptive (HLS)';
+            this.currentStreamQuality = fallbackText;
+            if (this.streamQuality) {
+                this.streamQuality.textContent = fallbackText;
+            }
+        }
+    }
+
+    updateStreamQualityForSafari() {
+        // For Safari native HLS, we can't get as detailed info
+        const safariText = 'Stream quality: Adaptive (Native HLS)';
+        this.currentStreamQuality = safariText;
+        if (this.streamQuality) {
+            this.streamQuality.textContent = safariText;
+        }
+    }
+
     async fetchMetadata() {
         try {
             const response = await fetch(this.metadataUrl);
@@ -171,7 +238,11 @@ class RadioPlayer {
 
         // Update quality information
         this.sourceQuality.textContent = `Source quality: ${data.bit_depth || '16'}-bit ${(data.sample_rate || '44100') / 1000}kHz`;
-        this.streamQuality.textContent = 'Stream quality: 48kHz FLAC / HLS Lossless';
+        
+        // Update stream quality if not already set
+        if (!this.currentStreamQuality) {
+            this.updateStreamQuality();
+        }
 
         // Set up rating button listeners and load ratings after user ID is ready
         setTimeout(() => {
