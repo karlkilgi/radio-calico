@@ -79,7 +79,7 @@ class MockRatingSystem {
         })
       });
 
-      if (response.ok) {
+      if (response && response.ok) {
         const result = await response.json();
         document.getElementById('thumbsUpCount').textContent = result.thumbs_up;
         document.getElementById('thumbsDownCount').textContent = result.thumbs_down;
@@ -147,8 +147,8 @@ describe('Rating System', () => {
     expect(thumbsUpBtn).toBeDefined();
     expect(thumbsDownBtn).toBeDefined();
 
-    // Check if event listeners are attached (indirectly)
-    const rateSongSpy = vi.spyOn(ratingSystem, 'rateSong');
+    // Mock rateSong to avoid fetch calls
+    const rateSongSpy = vi.spyOn(ratingSystem, 'rateSong').mockResolvedValue({ thumbs_up: 1, thumbs_down: 0 });
 
     thumbsUpBtn.click();
     expect(rateSongSpy).toHaveBeenCalledWith(1);
@@ -355,7 +355,7 @@ describe('Rating System', () => {
 
   test('should handle rating button clicks', () => {
     ratingSystem.setupRatingButtons();
-    const rateSongSpy = vi.spyOn(ratingSystem, 'rateSong');
+    const rateSongSpy = vi.spyOn(ratingSystem, 'rateSong').mockResolvedValue({ thumbs_up: 1, thumbs_down: 0 });
 
     const thumbsUpBtn = document.getElementById('thumbsUpBtn');
     const thumbsDownBtn = document.getElementById('thumbsDownBtn');
