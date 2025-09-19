@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Test Song 1",
+    "artist": "Test Artist 1",
+    "album": "Test Album 1",
+    "song_hash": "test_hash_1"
+  },
+  {
+    "title": "Test Song 2",
+    "artist": "Test Artist 2",
+    "album": "Test Album 2",
+    "song_hash": "test_hash_2"
+  },
+  {
+    "title": "Classical Symphony No. 5",
+    "artist": "Ludwig van Beethoven",
+    "album": "Complete Symphonies",
+    "song_hash": "beethoven_symphony_5"
+  },
+  {
+    "title": "Jazz Standard",
+    "artist": "Miles Davis",
+    "album": "Kind of Blue",
+    "song_hash": "miles_jazz_standard"
+  },
+  {
+    "title": "Rock Anthem",
+    "artist": "The Beatles",
+    "album": "Abbey Road",
+    "song_hash": "beatles_rock_anthem"
+  }
+]
