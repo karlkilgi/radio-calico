@@ -2,15 +2,19 @@
 // Fix for webidl-conversions error with MSW in Node.js
 import { beforeAll, afterEach, afterAll, beforeEach, vi } from 'vitest';
 
-// Polyfill for util.types.isProxy which is missing in some Node.js environments
-if (!globalThis.util) {
-  globalThis.util = {};
-}
-if (!globalThis.util.types) {
-  globalThis.util.types = {};
-}
-if (!globalThis.util.types.isProxy) {
-  globalThis.util.types.isProxy = () => false;
+// Polyfill for util.types.isProxy which is missing in Node.js < 20
+// This polyfill is kept for backwards compatibility but shouldn't be needed with Node 20+
+import util from 'util';
+if (!util.types || !util.types.isProxy) {
+  if (!globalThis.util) {
+    globalThis.util = {};
+  }
+  if (!globalThis.util.types) {
+    globalThis.util.types = {};
+  }
+  if (!globalThis.util.types.isProxy) {
+    globalThis.util.types.isProxy = () => false;
+  }
 }
 
 import '@testing-library/jest-dom';
