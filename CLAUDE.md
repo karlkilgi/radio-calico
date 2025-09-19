@@ -51,6 +51,19 @@ radiocalico/
 
 ## Development Commands
 
+### Make Targets (Recommended)
+- `make help` - Show all available commands
+- `make dev` or `make d` - Start development server locally
+- `make dev-docker` - Start development with Docker
+- `make prod` or `make p` - Start production environment
+- `make test` or `make t` - Run all tests
+- `make test-watch` - Run tests in watch mode
+- `make test-coverage` - Run tests with coverage
+- `make setup` - Initial project setup
+- `make clean` - Clean all Docker resources
+- `make health` - Check production service health
+- `make info` - Show project information
+
 ### Local Development
 - `npm start` - Start the server (port 3001)
 - `npm run dev` - Start development server
@@ -69,6 +82,12 @@ radiocalico/
 - `docker-compose -f docker-compose.prod.yml up -d` - Start production container
 - `docker build --target development -t radiocalico:dev .` - Build dev image
 - `docker build --target production -t radiocalico:prod .` - Build prod image
+
+### Database Commands (Production)
+- `make db-backup` - Backup PostgreSQL database
+- `make db-restore BACKUP_FILE=path/to/backup.sql` - Restore database
+- `make db-shell` - Access PostgreSQL shell
+- `make db-reset` - Reset database (WARNING: deletes data)
 
 ## Dependencies
 ### Production
