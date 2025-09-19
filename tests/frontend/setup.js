@@ -1,6 +1,19 @@
 // Frontend test setup
+// Fix for webidl-conversions error with MSW in Node.js
+import { beforeAll, afterEach, afterAll, beforeEach, vi } from 'vitest';
+
+// Polyfill for util.types.isProxy which is missing in some Node.js environments
+if (!globalThis.util) {
+  globalThis.util = {};
+}
+if (!globalThis.util.types) {
+  globalThis.util.types = {};
+}
+if (!globalThis.util.types.isProxy) {
+  globalThis.util.types.isProxy = () => false;
+}
+
 import '@testing-library/jest-dom';
-import { beforeAll, afterEach, afterAll } from 'vitest';
 import { server } from './mocks/server.js';
 
 // Start MSW server before all tests
