@@ -1,18 +1,46 @@
 version: '3.8'
 
 services:
-  radiocalico:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: radiocalico-postgres
+    environment:
+      POSTGRES_DB: radiocalico
+      POSTGRES_USER: radiocalico
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-radiocalico_prod_2024}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - radiocalico-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U radiocalico"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API Service
+  backend:
     build:
       context: .
+      dockerfile: Dockerfile.backend
       target: production
-    ports:
-      - "3001:3001"
-    volumes:
-      # Persist database across container restarts
-      - radiocalico_db:/app/data
+    container_name: radiocalico-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=radiocalico
+      - DB_USER=radiocalico
+      - DB_PASSWORD=${DB_PASSWORD:-radiocalico_prod_2024}
+    networks:
+      - radiocalico-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
@@ -37,6 +65,49 @@ services:
     tmpfs:
       - /tmp:noexec,nosuid,size=100m
 
+  # Nginx Frontend Service
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: radiocalico-nginx
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - radiocalico-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:uid=1001,gid=1001
+      - /var/run:uid=1001,gid=1001
+      - /var/log/nginx:uid=1001,gid=1001
+
+networks:
+  radiocalico-network:
+    driver: bridge
+
 volumes:
-  radiocalico_db:
+  postgres_data:
     driver: local

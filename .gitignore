@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Database files
+database.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Build outputs
+dist/
+build/
+
+# Docker
+*.pid
+
+# Backup files
+*.bak
+backup.sql
