@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  radiocalico-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3001:3001"
+    volumes:
+      # Mount source code for live development
+      - .:/app
+      - /app/node_modules
+      # Persist database across container restarts
+      - radiocalico_db_dev:/app/data
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  radiocalico_db_dev:
+    driver: local

@@ -68,6 +68,34 @@ CREATE TABLE ratings (
 
 ## Getting Started
 
+### Option 1: Docker (Recommended)
+
+#### Development Environment
+```bash
+# Build and start development container
+docker-compose up
+
+# Or run in background
+docker-compose up -d
+```
+
+#### Production Deployment
+```bash
+# Deploy production container
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### Manual Docker Build
+```bash
+# Development image
+docker build --target development -t radiocalico:dev .
+
+# Production image
+docker build --target production -t radiocalico:prod .
+```
+
+### Option 2: Local Development
+
 1. **Install dependencies**:
    ```bash
    npm install
@@ -78,9 +106,9 @@ CREATE TABLE ratings (
    npm start
    ```
 
-3. **Access the radio**:
-   - Open `http://localhost:3001/radio` in your browser
-   - The audio stream will begin loading automatically
+### Access the Application
+- Open `http://localhost:3001/radio` in your browser
+- The audio stream will begin loading automatically
 
 ## Stream Quality
 
@@ -89,6 +117,25 @@ CREATE TABLE ratings (
 - **Delivery**: Amazon CloudFront CDN for global performance
 - **Compatibility**: All modern browsers via HLS.js polyfill
 
+## Docker Deployment
+
+### Container Features
+- **Multi-stage build**: Separate development and production images
+- **Security hardening**: Non-root user, read-only filesystem (production)
+- **Persistent storage**: SQLite database persisted via Docker volumes
+- **Health checks**: Built-in container health monitoring
+- **Optimized images**: Development (552MB), Production (425MB)
+
+### Development Container
+- Includes all dev dependencies and testing frameworks
+- Live code mounting for hot reload during development
+- Full test suite available (`npm test`)
+
+### Production Container
+- Minimal production-only dependencies
+- Security features: capability restrictions, logging limits
+- Optimized for deployment with proper signal handling
+
 ## Architecture
 
 The radio system uses a client-server architecture:
@@ -96,3 +143,4 @@ The radio system uses a client-server architecture:
 - **Server**: Express.js API with SQLite database
 - **Stream**: External HLS stream served via CDN
 - **Security**: Helmet.js with CSP policies for secure streaming
+- **Deployment**: Dockerized with multi-stage builds for dev/prod environments

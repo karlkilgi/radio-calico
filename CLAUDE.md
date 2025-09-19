@@ -16,6 +16,10 @@ radiocalico/
 ├── vite.config.js              # Vitest configuration for frontend tests
 ├── README.md                   # Project documentation
 ├── TESTING_STRATEGY.md         # Comprehensive testing documentation
+├── Dockerfile                  # Multi-stage Docker build (dev/prod)
+├── docker-compose.yml          # Development container configuration
+├── docker-compose.prod.yml     # Production container configuration
+├── .dockerignore               # Docker build context optimization
 ├── public/                     # Static web assets
 │   ├── index.html              # Main development page
 │   ├── radio.html              # Radio player page
@@ -46,7 +50,9 @@ radiocalico/
 ```
 
 ## Development Commands
-- `npm start` - Start the server
+
+### Local Development
+- `npm start` - Start the server (port 3001)
 - `npm run dev` - Start development server
 - `npm test` - Run all tests (backend + frontend)
 - `npm run test:backend` - Run backend tests only
@@ -56,6 +62,13 @@ radiocalico/
 - `npm run test:backend:coverage` - Run backend tests with coverage
 - `npm run test:frontend:coverage` - Run frontend tests with coverage
 - `npm run test:ci` - Run tests optimized for CI/CD
+
+### Docker Commands
+- `docker-compose up` - Start development container
+- `docker-compose up -d` - Start development container in background
+- `docker-compose -f docker-compose.prod.yml up -d` - Start production container
+- `docker build --target development -t radiocalico:dev .` - Build dev image
+- `docker build --target production -t radiocalico:prod .` - Build prod image
 
 ## Dependencies
 ### Production
@@ -115,8 +128,18 @@ The project uses a comprehensive testing strategy with both backend and frontend
 - `GET /api/users` - User management (development)
 - `POST /api/users` - Create user (development)
 
+## Docker Deployment
+- **Multi-stage Dockerfile**: Separate development and production builds
+- **Development image**: 552MB with full dev dependencies and test frameworks
+- **Production image**: 425MB optimized with security hardening
+- **Security features**: Non-root user, read-only filesystem, capability restrictions
+- **Persistent storage**: SQLite database via Docker volumes
+- **Health checks**: Built-in container monitoring
+- **Port**: Application runs on port 3001 in containers
+
 ## Notes
 - Keep documentation minimal unless explicitly requested
 - Prefer editing existing files over creating new ones
 - All tests passing: 57 total (27 backend + 30 frontend)
 - Use `npm test` to run full test suite before commits
+- For Docker deployment, use `docker-compose up` for development or `docker-compose -f docker-compose.prod.yml up -d` for production
