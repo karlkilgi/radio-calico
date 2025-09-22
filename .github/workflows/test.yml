@@ -121,7 +121,7 @@ jobs:
       - name: Validate Docker configurations
         run: |
           docker compose config > /dev/null
-          docker compose -f docker compose.prod.yml config > /dev/null
+          docker compose -f docker-compose.prod.yml config > /dev/null
 
       - name: Run security configuration checks
         run: |
