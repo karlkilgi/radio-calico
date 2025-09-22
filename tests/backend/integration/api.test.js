@@ -9,7 +9,15 @@ describe('API Endpoints', () => {
 
   beforeEach(() => {
     // Create test database
-    db = global.createTestDb();
+    try {
+      db = global.createTestDb();
+      if (!db) {
+        throw new Error('Failed to create test database');
+      }
+    } catch (error) {
+      console.error('Error creating test database:', error);
+      throw error;
+    }
 
     // Create Express app
     app = express();
@@ -158,7 +166,9 @@ describe('API Endpoints', () => {
   });
 
   afterEach(() => {
-    db.close();
+    if (db && typeof db.close === 'function') {
+      db.close();
+    }
   });
 
   describe('GET /api/users', () => {
