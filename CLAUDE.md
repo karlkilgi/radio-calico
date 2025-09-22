@@ -59,6 +59,8 @@ radiocalico/
 - `make test` or `make t` - Run all tests
 - `make test-watch` - Run tests in watch mode
 - `make test-coverage` - Run tests with coverage
+- `make security` - Run comprehensive security scan
+- `make security-report` - Generate detailed security report
 - `make setup` - Initial project setup
 - `make clean` - Clean all Docker resources
 - `make health` - Check production service health
@@ -88,6 +90,15 @@ radiocalico/
 - `make db-restore BACKUP_FILE=path/to/backup.sql` - Restore database
 - `make db-shell` - Access PostgreSQL shell
 - `make db-reset` - Reset database (WARNING: deletes data)
+
+### Security Commands
+- `make security` - Run comprehensive security scan
+- `make security-audit` - NPM dependency vulnerability scan
+- `make security-audit-fix` - Automatically fix vulnerabilities
+- `make security-docker` - Scan Docker images with Trivy
+- `make security-config` - Validate security configurations
+- `make security-report` - Generate detailed security report
+- `make security-outdated` - Check for outdated packages
 
 ## Dependencies
 ### Production
@@ -161,4 +172,7 @@ The project uses a comprehensive testing strategy with both backend and frontend
 - Prefer editing existing files over creating new ones
 - All tests passing: 57 total (27 backend + 30 frontend)
 - Use `npm test` to run full test suite before commits
+- Use `make security` to run security scans before commits
 - For Docker deployment, use `docker-compose up` for development or `docker-compose -f docker-compose.prod.yml up -d` for production
+- Security scanning includes NPM audit, Docker image scanning, and configuration validation
+- CI/CD pipeline includes automated security checks with Trivy and GitHub Security integration
