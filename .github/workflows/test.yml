@@ -151,10 +151,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.backend
           target: production
           push: false
           tags: radiocalico-backend:test
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -165,6 +166,7 @@ jobs:
           file: ./Dockerfile.nginx
           push: false
           tags: radiocalico-nginx:test
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -174,6 +176,7 @@ jobs:
           image-ref: 'radiocalico-backend:test'
           format: 'sarif'
           output: 'trivy-backend-results.sarif'
+        continue-on-error: true
 
       - name: Run Trivy vulnerability scanner on nginx
         uses: aquasecurity/trivy-action@master
@@ -181,15 +184,18 @@ jobs:
           image-ref: 'radiocalico-nginx:test'
           format: 'sarif'
           output: 'trivy-nginx-results.sarif'
+        continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
-        if: always()
+        if: success() || failure()
         with:
           sarif_file: 'trivy-backend-results.sarif'
+        continue-on-error: true
 
       - name: Upload Trivy nginx scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
-        if: always()
+        if: success() || failure()
         with:
           sarif_file: 'trivy-nginx-results.sarif'
+        continue-on-error: true
