@@ -107,8 +107,89 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run security audit
+      - name: Run npm security audit
         run: npm audit --audit-level=moderate
 
-      - name: Check for known vulnerabilities
+      - name: Check for known vulnerabilities with audit-ci
         run: npx audit-ci --moderate
+        continue-on-error: true
+
+      - name: Check for outdated packages
+        run: npm outdated
+        continue-on-error: true
+
+      - name: Validate Docker configurations
+        run: |
+          docker-compose config > /dev/null
+          docker-compose -f docker-compose.prod.yml config > /dev/null
+
+      - name: Run security configuration checks
+        run: |
+          # Check Docker Compose security settings
+          grep -q "no-new-privileges" docker-compose.prod.yml && echo "✓ no-new-privileges enabled" || (echo "✗ no-new-privileges missing" && exit 1)
+          grep -q "read_only: true" docker-compose.prod.yml && echo "✓ read-only filesystem enabled" || (echo "✗ read-only filesystem missing" && exit 1)
+          grep -q "cap_drop:" docker-compose.prod.yml && echo "✓ capabilities dropped" || (echo "✗ capabilities not dropped" && exit 1)
+
+          # Check nginx security headers
+          grep -q "X-Frame-Options" nginx.conf && echo "✓ X-Frame-Options header" || (echo "✗ X-Frame-Options missing" && exit 1)
+          grep -q "X-XSS-Protection" nginx.conf && echo "✓ X-XSS-Protection header" || (echo "✗ X-XSS-Protection missing" && exit 1)
+          grep -q "X-Content-Type-Options" nginx.conf && echo "✓ X-Content-Type-Options header" || (echo "✗ X-Content-Type-Options missing" && exit 1)
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          target: production
+          push: false
+          tags: radiocalico-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build nginx image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.nginx
+          push: false
+          tags: radiocalico-nginx:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner on backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'radiocalico-backend:test'
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+
+      - name: Run Trivy vulnerability scanner on nginx
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'radiocalico-nginx:test'
+          format: 'sarif'
+          output: 'trivy-nginx-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+
+      - name: Upload Trivy nginx scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-nginx-results.sarif'

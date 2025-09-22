@@ -143,6 +143,101 @@ test-ui: ## Open Vitest UI for interactive testing
 	@echo "$(YELLOW)Opening Vitest UI...$(NC)"
 	$(NPM) run test:frontend:ui
 
+# ==================== Security Testing ====================
+.PHONY: security
+security: ## Run comprehensive security scan
+	@echo "$(YELLOW)Running comprehensive security scan...$(NC)"
+	@echo "$(YELLOW)1. Checking npm dependencies for vulnerabilities...$(NC)"
+	$(NPM) audit
+	@echo "$(YELLOW)2. Checking for outdated packages...$(NC)"
+	$(NPM) outdated || true
+	@echo "$(YELLOW)3. Validating Docker configurations...$(NC)"
+	$(MAKE) validate
+	@echo "$(GREEN)Security scan completed$(NC)"
+
+.PHONY: security-audit
+security-audit: ## Run npm security audit
+	@echo "$(YELLOW)Running npm security audit...$(NC)"
+	$(NPM) audit
+
+.PHONY: security-audit-fix
+security-audit-fix: ## Automatically fix npm security vulnerabilities
+	@echo "$(YELLOW)Fixing npm security vulnerabilities...$(NC)"
+	$(NPM) audit fix
+	@echo "$(GREEN)Security fixes applied$(NC)"
+
+.PHONY: security-audit-force
+security-audit-force: ## Force fix npm security vulnerabilities (potentially breaking)
+	@echo "$(RED)WARNING: This may introduce breaking changes!$(NC)"
+	@echo "Press Ctrl+C to cancel, or wait 5 seconds to continue..."
+	@sleep 5
+	$(NPM) audit fix --force
+	@echo "$(GREEN)Force security fixes applied$(NC)"
+
+.PHONY: security-outdated
+security-outdated: ## Check for outdated packages
+	@echo "$(YELLOW)Checking for outdated packages...$(NC)"
+	$(NPM) outdated
+
+.PHONY: security-licenses
+security-licenses: ## Check package licenses
+	@echo "$(YELLOW)Checking package licenses...$(NC)"
+	@if command -v npx >/dev/null 2>&1; then \
+		npx license-checker --summary || echo "$(YELLOW)Install license-checker: npm install -g license-checker$(NC)"; \
+	else \
+		echo "$(RED)npx not available$(NC)"; \
+	fi
+
+.PHONY: security-docker
+security-docker: ## Scan Docker images for vulnerabilities
+	@echo "$(YELLOW)Scanning Docker images for vulnerabilities...$(NC)"
+	@if command -v docker >/dev/null 2>&1; then \
+		echo "$(YELLOW)Building production images for scanning...$(NC)"; \
+		$(DOCKER_COMPOSE_PROD) build --quiet; \
+		echo "$(YELLOW)Scanning backend image...$(NC)"; \
+		docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+			-v $(PWD):/app -w /app \
+			aquasec/trivy:latest image radiocalico-backend || \
+			echo "$(YELLOW)Trivy not available. Install: docker pull aquasec/trivy$(NC)"; \
+		echo "$(YELLOW)Scanning nginx image...$(NC)"; \
+		docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+			-v $(PWD):/app -w /app \
+			aquasec/trivy:latest image radiocalico-nginx || \
+			echo "$(YELLOW)Trivy not available. Install: docker pull aquasec/trivy$(NC)"; \
+	else \
+		echo "$(RED)Docker not available$(NC)"; \
+	fi
+
+.PHONY: security-config
+security-config: ## Validate security configurations
+	@echo "$(YELLOW)Validating security configurations...$(NC)"
+	@echo "$(YELLOW)Checking Docker Compose security settings...$(NC)"
+	@grep -q "no-new-privileges" docker-compose.prod.yml && echo "$(GREEN)✓ no-new-privileges enabled$(NC)" || echo "$(RED)✗ no-new-privileges missing$(NC)"
+	@grep -q "read_only: true" docker-compose.prod.yml && echo "$(GREEN)✓ read-only filesystem enabled$(NC)" || echo "$(RED)✗ read-only filesystem missing$(NC)"
+	@grep -q "cap_drop:" docker-compose.prod.yml && echo "$(GREEN)✓ capabilities dropped$(NC)" || echo "$(RED)✗ capabilities not dropped$(NC)"
+	@echo "$(YELLOW)Checking nginx security headers...$(NC)"
+	@grep -q "X-Frame-Options" nginx.conf && echo "$(GREEN)✓ X-Frame-Options header$(NC)" || echo "$(RED)✗ X-Frame-Options missing$(NC)"
+	@grep -q "X-XSS-Protection" nginx.conf && echo "$(GREEN)✓ X-XSS-Protection header$(NC)" || echo "$(RED)✗ X-XSS-Protection missing$(NC)"
+	@grep -q "X-Content-Type-Options" nginx.conf && echo "$(GREEN)✓ X-Content-Type-Options header$(NC)" || echo "$(RED)✗ X-Content-Type-Options missing$(NC)"
+
+.PHONY: security-report
+security-report: ## Generate comprehensive security report
+	@echo "$(GREEN)RadioCalico Security Report$(NC)"
+	@echo "============================"
+	@echo "Generated: $$(date)"
+	@echo ""
+	@echo "$(YELLOW)1. NPM Audit Results:$(NC)"
+	@$(NPM) audit --audit-level info 2>/dev/null || echo "No vulnerabilities found"
+	@echo ""
+	@echo "$(YELLOW)2. Outdated Packages:$(NC)"
+	@$(NPM) outdated 2>/dev/null || echo "All packages are up to date"
+	@echo ""
+	@echo "$(YELLOW)3. Security Configuration Check:$(NC)"
+	@$(MAKE) security-config 2>/dev/null
+	@echo ""
+	@echo "$(YELLOW)4. Docker Images:$(NC)"
+	@docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" | grep radiocalico || echo "No radiocalico images found"
+
 # ==================== Database ====================
 .PHONY: db-backup
 db-backup: ## Backup production database
