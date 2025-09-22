@@ -151,7 +151,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.backend
+          file: ./Dockerfile
           target: production
           push: false
           tags: radiocalico-backend:test
