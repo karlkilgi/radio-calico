@@ -126,9 +126,9 @@ jobs:
       - name: Run security configuration checks
         run: |
           # Check Docker Compose security settings
-          grep -q "no-new-privileges" docker compose.prod.yml && echo "✓ no-new-privileges enabled" || (echo "✗ no-new-privileges missing" && exit 1)
-          grep -q "read_only: true" docker compose.prod.yml && echo "✓ read-only filesystem enabled" || (echo "✗ read-only filesystem missing" && exit 1)
-          grep -q "cap_drop:" docker compose.prod.yml && echo "✓ capabilities dropped" || (echo "✗ capabilities not dropped" && exit 1)
+          grep -q "no-new-privileges" docker-compose.prod.yml && echo "✓ no-new-privileges enabled" || (echo "✗ no-new-privileges missing" && exit 1)
+          grep -q "read_only: true" docker-compose.prod.yml && echo "✓ read-only filesystem enabled" || (echo "✗ read-only filesystem missing" && exit 1)
+          grep -q "cap_drop:" docker-compose.prod.yml && echo "✓ capabilities dropped" || (echo "✗ capabilities not dropped" && exit 1)
 
           # Check nginx security headers
           grep -q "X-Frame-Options" nginx.conf && echo "✓ X-Frame-Options header" || (echo "✗ X-Frame-Options missing" && exit 1)
