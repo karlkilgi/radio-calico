@@ -2,8 +2,15 @@
 # Convenient commands for development, production, and testing
 
 # Variables
-DOCKER_COMPOSE = docker-compose
-DOCKER_COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+# Detect if docker compose (new) or docker-compose (legacy) is available
+DOCKER_COMPOSE_CMD := $(shell command -v docker-compose 2> /dev/null)
+ifdef DOCKER_COMPOSE_CMD
+    DOCKER_COMPOSE = docker-compose
+    DOCKER_COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+else
+    DOCKER_COMPOSE = docker compose
+    DOCKER_COMPOSE_PROD = docker compose -f docker-compose.prod.yml
+endif
 NPM = npm
 
 # Colors for output
