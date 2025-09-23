@@ -4,21 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadioCalico - Live Stream</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Resource hints for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://d3d4yli4hf5bmh.cloudfront.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+    <!-- Optimized font loading -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"></noscript>
+
+    <!-- Lazy load HLS.js -->
+    <script>
+      window.hlsLoaded = false;
+      function loadHLS() {
+        if (!window.hlsLoaded) {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+          script.onload = () => { window.hlsLoaded = true; };
+          document.head.appendChild(script);
+        }
+      }
+    </script>
     <link rel="stylesheet" href="radio.css">
 </head>
 <body>
     <header class="header">
         <div class="header-content">
-            <img src="/logo.png" alt="RadioCalico" class="logo">
+            <img src="/logo.png" alt="RadioCalico" class="logo" loading="eager" decoding="async">
             <h1 class="site-title">Radio Calico</h1>
         </div>
     </header>
     
     <main class="main-content">
         <section class="album-section">
-            <img src="https://d3d4yli4hf5bmh.cloudfront.net/cover.jpg" alt="Album Art" class="album-art" id="albumArt">
+            <img src="https://d3d4yli4hf5bmh.cloudfront.net/cover.jpg" alt="Album Art" class="album-art" id="albumArt" loading="lazy" decoding="async">
         </section>
         
         <section class="track-section">

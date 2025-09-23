@@ -27,6 +27,8 @@ body {
 .logo {
     height: 40px;
     width: auto;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 .site-title {
@@ -72,6 +74,9 @@ body {
     display: block;
     border-radius: 0;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    contain: layout style;
 }
 
 .track-section {
@@ -140,7 +145,8 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease;
+    will-change: transform;
 }
 
 .rating-button:hover {
@@ -281,6 +287,7 @@ body {
     border-top: 3px solid #666;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    will-change: transform;
 }
 
 .loader-large {
@@ -307,6 +314,7 @@ body {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+    will-change: background-position;
 }
 
 @keyframes shimmer {
