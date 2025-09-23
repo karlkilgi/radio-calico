@@ -1,0 +1,47 @@
+# GitHub App Manifest for Claude Integration
+# Use this to create a GitHub App at: https://github.com/settings/apps/new
+# Or go to your organization settings to create an organization app
+
+name: "Claude Code Assistant"
+description: "AI-powered code review and assistance using Claude"
+url: "https://claude.ai"
+public: false
+
+# Default permissions for the app
+default_permissions:
+  # Repository permissions
+  contents: read
+  issues: write
+  pull_requests: write
+  metadata: read
+
+  # Optional permissions for enhanced features
+  actions: read
+  checks: write
+  repository_hooks: read
+  statuses: write
+
+# Events the app will subscribe to
+default_events:
+  - pull_request
+  - pull_request_review
+  - pull_request_review_comment
+  - issues
+  - issue_comment
+  - push
+  - workflow_run
+
+# Webhook configuration
+webhook:
+  active: true
+  # You'll need to provide your webhook URL
+  # This should point to your Claude integration service
+  url: "https://your-claude-integration.example.com/webhook"
+
+# Installation options
+# - Only allow installation on specific repositories
+# - Or allow installation on all repositories in account
+redirect_url: "https://your-claude-integration.example.com/auth/callback"
+
+# Setup URL for post-installation configuration
+setup_url: "https://your-claude-integration.example.com/setup"
