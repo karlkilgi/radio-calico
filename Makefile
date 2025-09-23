@@ -2,8 +2,15 @@
 # Convenient commands for development, production, and testing
 
 # Variables
-DOCKER_COMPOSE = docker-compose
-DOCKER_COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+# Detect if docker compose (new) or docker-compose (legacy) is available
+DOCKER_COMPOSE_CMD := $(shell command -v docker-compose 2> /dev/null)
+ifdef DOCKER_COMPOSE_CMD
+    DOCKER_COMPOSE = docker-compose
+    DOCKER_COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+else
+    DOCKER_COMPOSE = docker compose
+    DOCKER_COMPOSE_PROD = docker compose -f docker-compose.prod.yml
+endif
 NPM = npm
 
 # Colors for output
@@ -192,18 +199,27 @@ security-licenses: ## Check package licenses
 security-docker: ## Scan Docker images for vulnerabilities
 	@echo "$(YELLOW)Scanning Docker images for vulnerabilities...$(NC)"
 	@if command -v docker >/dev/null 2>&1; then \
-		echo "$(YELLOW)Building production images for scanning...$(NC)"; \
-		$(DOCKER_COMPOSE_PROD) build --quiet; \
 		echo "$(YELLOW)Scanning backend image...$(NC)"; \
 		docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 			-v $(PWD):/app -w /app \
-			aquasec/trivy:latest image radiocalico-backend || \
-			echo "$(YELLOW)Trivy not available. Install: docker pull aquasec/trivy$(NC)"; \
+			aquasec/trivy:latest image --format sarif --output trivy-backend-results.sarif radiocalico-backend:test || \
+			echo "$(YELLOW)Backend image scan failed or Trivy not available$(NC)"; \
 		echo "$(YELLOW)Scanning nginx image...$(NC)"; \
 		docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 			-v $(PWD):/app -w /app \
-			aquasec/trivy:latest image radiocalico-nginx || \
-			echo "$(YELLOW)Trivy not available. Install: docker pull aquasec/trivy$(NC)"; \
+			aquasec/trivy:latest image --format sarif --output trivy-nginx-results.sarif radiocalico-nginx:test || \
+			echo "$(YELLOW)Nginx image scan failed or Trivy not available$(NC)"; \
+		echo "$(YELLOW)Docker security scan completed$(NC)"; \
+		if [ -f trivy-backend-results.sarif ]; then \
+			echo "$(GREEN)✓ Backend SARIF results generated$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Backend SARIF results not generated$(NC)"; \
+		fi; \
+		if [ -f trivy-nginx-results.sarif ]; then \
+			echo "$(GREEN)✓ Nginx SARIF results generated$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Nginx SARIF results not generated$(NC)"; \
+		fi; \
 	else \
 		echo "$(RED)Docker not available$(NC)"; \
 	fi

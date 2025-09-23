@@ -4,11 +4,21 @@ describe('Database Operations', () => {
   let db;
 
   beforeEach(() => {
-    db = global.createTestDb();
+    try {
+      db = global.createTestDb();
+      if (!db) {
+        throw new Error('Failed to create test database');
+      }
+    } catch (error) {
+      console.error('Error in beforeEach:', error);
+      throw error;
+    }
   });
 
   afterEach(() => {
-    db.close();
+    if (db && typeof db.close === 'function') {
+      db.close();
+    }
   });
 
   describe('Songs Table', () => {
