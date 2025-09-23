@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
+const { initializeSchema } = require('./src/database/schema');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -69,40 +70,10 @@ if (isProduction) {
     return result.rows[0];
   };
 
-  // Initialize PostgreSQL tables
+  // Initialize PostgreSQL tables using centralized schema
   const initDb = async () => {
     try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS users (
-          id SERIAL PRIMARY KEY,
-          name TEXT NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS songs (
-          id SERIAL PRIMARY KEY,
-          title TEXT NOT NULL,
-          artist TEXT NOT NULL,
-          album TEXT,
-          song_hash TEXT UNIQUE NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS ratings (
-          id SERIAL PRIMARY KEY,
-          song_id INTEGER NOT NULL REFERENCES songs(id),
-          user_id TEXT NOT NULL,
-          rating INTEGER NOT NULL CHECK (rating IN (-1, 1)),
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(song_id, user_id)
-        )
-      `);
-
+      await initializeSchema(pool, 'postgres');
       console.log('PostgreSQL database initialized');
     } catch (error) {
       console.error('Failed to initialize PostgreSQL database:', error);
@@ -154,38 +125,8 @@ if (isProduction) {
     return db.prepare(text).get(...params);
   };
 
-  // Initialize SQLite tables
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS songs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      artist TEXT NOT NULL,
-      album TEXT,
-      song_hash TEXT UNIQUE NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS ratings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_id INTEGER NOT NULL,
-      user_id TEXT NOT NULL,
-      rating INTEGER NOT NULL CHECK (rating IN (-1, 1)),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (song_id) REFERENCES songs (id),
-      UNIQUE(song_id, user_id)
-    )
-  `);
+  // Initialize SQLite tables using centralized schema
+  initializeSchema(db, 'sqlite');
 
   // Cleanup on exit
   process.on('exit', () => {

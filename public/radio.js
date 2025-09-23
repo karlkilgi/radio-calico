@@ -361,8 +361,7 @@ class RadioPlayer {
                         fonts: this.getFontFingerprint()
                     };
 
-                    const fingerprintString = JSON.stringify(fingerprint);
-                    resolve(this.hashString(fingerprintString));
+                    resolve(HashUtils.getUserFingerprintHash(fingerprint));
                 });
             };
 
@@ -402,17 +401,7 @@ class RadioPlayer {
             fontHash += canvas.toDataURL().substring(0, 10);
         });
 
-        return this.hashString(fontHash).substring(0, 8);
-    }
-
-    hashString(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return Math.abs(hash).toString(36);
+        return HashUtils.hashString(fontHash).substring(0, 8);
     }
 
     async getUserId() {
@@ -440,8 +429,7 @@ class RadioPlayer {
     }
 
     getSongHash(track) {
-        const hashString = `${track.artist || ''}_${track.title || ''}_${track.album || ''}`.toLowerCase();
-        return this.hashString(hashString);
+        return HashUtils.getSongHash(track);
     }
 
     setupRatingButtons() {
