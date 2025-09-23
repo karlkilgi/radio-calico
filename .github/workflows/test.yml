@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Rebuild native modules for current platform
+        run: npm rebuild
+
       - name: Run all tests with coverage
         run: make test-coverage
 
@@ -61,6 +64,9 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Rebuild native modules for current platform
+        run: npm rebuild
+
       - name: Start server for integration tests
         run: |
           make dev &
@@ -90,6 +96,9 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Rebuild native modules for current platform
+        run: npm rebuild
+
       - name: Run comprehensive security scan
         run: make security
 
@@ -114,6 +123,9 @@ jobs:
 
       - name: Install dependencies
         run: make install
+
+      - name: Rebuild native modules for current platform
+        run: npm rebuild
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
