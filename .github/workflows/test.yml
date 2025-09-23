@@ -125,16 +125,32 @@ jobs:
         run: make security-docker
         continue-on-error: true
 
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Check for SARIF files
+        run: |
+          echo "Checking for SARIF files..."
+          if [ -f trivy-backend-results.sarif ]; then
+            echo "✓ Backend SARIF file exists"
+            ls -la trivy-backend-results.sarif
+          else
+            echo "⚠ Backend SARIF file not found"
+          fi
+          if [ -f trivy-nginx-results.sarif ]; then
+            echo "✓ Nginx SARIF file exists"
+            ls -la trivy-nginx-results.sarif
+          else
+            echo "⚠ Nginx SARIF file not found"
+          fi
+
+      - name: Upload Trivy backend scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
-        if: success() || failure()
+        if: hashFiles('trivy-backend-results.sarif') != ''
         with:
           sarif_file: 'trivy-backend-results.sarif'
         continue-on-error: true
 
       - name: Upload Trivy nginx scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
-        if: success() || failure()
+        if: hashFiles('trivy-nginx-results.sarif') != ''
         with:
           sarif_file: 'trivy-nginx-results.sarif'
         continue-on-error: true

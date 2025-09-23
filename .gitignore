@@ -43,3 +43,7 @@ build/
 # Backup files
 *.bak
 backup.sql
+
+# Security scan results
+*.sarif
+trivy-*.sarif
