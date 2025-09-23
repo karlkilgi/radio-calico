@@ -46,7 +46,21 @@ class RadioPlayer {
         this.startMetadataFetching();
     }
 
-    setupHLS() {
+    async setupHLS() {
+        // Load HLS.js if not already loaded
+        if (!window.Hls && !window.hlsLoaded) {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+                script.onload = () => {
+                    window.hlsLoaded = true;
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
         if (Hls.isSupported()) {
             this.hls = new Hls({
                 enableWorker: true,
@@ -95,11 +109,13 @@ class RadioPlayer {
                 this.playBtn.innerHTML = '▶';
                 this.isPlaying = false;
                 this.stopTimer();
+                this.updateMetadataInterval(); // Update polling frequency
             } else {
                 await this.audio.play();
                 this.playBtn.innerHTML = '⏸';
                 this.isPlaying = true;
                 this.startTimer();
+                this.updateMetadataInterval(); // Update polling frequency
             }
         } catch (error) {
             console.error('Playback error:', error);
@@ -219,9 +235,38 @@ class RadioPlayer {
 
     startMetadataFetching() {
         this.fetchMetadata(); // Initial fetch
+        this.updateMetadataInterval();
+
+        // Listen for page visibility changes to optimize polling
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.fetchMetadata(); // Immediate fetch when tab becomes visible
+            }
+            this.updateMetadataInterval();
+        });
+    }
+
+    updateMetadataInterval() {
+        if (this.metadataTimer) {
+            clearInterval(this.metadataTimer);
+        }
+
+        // Smart polling: faster when playing and visible, slower otherwise
+        const isPlaying = this.isPlaying;
+        const isVisible = document.visibilityState === 'visible';
+
+        let interval;
+        if (isPlaying && isVisible) {
+            interval = 15000; // 15 seconds when actively listening
+        } else if (isVisible) {
+            interval = 30000; // 30 seconds when visible but paused
+        } else {
+            interval = 60000; // 1 minute when tab is hidden
+        }
+
         this.metadataTimer = setInterval(() => {
             this.fetchMetadata();
-        }, 15000); // Update every 15 seconds
+        }, interval);
     }
 
     updateNowPlaying(data) {
@@ -291,32 +336,43 @@ class RadioPlayer {
     }
 
     async generateFingerprint() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillText('RadioCalico fingerprint', 2, 2);
-        const canvasFingerprint = canvas.toDataURL();
+        return new Promise((resolve) => {
+            const runFingerprinting = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('RadioCalico fingerprint', 2, 2);
+                const canvasFingerprint = canvas.toDataURL();
 
-        const clientIP = await this.getClientIP();
+                this.getClientIP().then(clientIP => {
+                    const fingerprint = {
+                        ip: clientIP,
+                        screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        userAgent: navigator.userAgent.substring(0, 100),
+                        canvas: canvasFingerprint.substring(0, 50),
+                        memory: navigator.deviceMemory || 'unknown',
+                        cores: navigator.hardwareConcurrency || 'unknown',
+                        touchSupport: 'ontouchstart' in window,
+                        webgl: this.getWebGLFingerprint(),
+                        fonts: this.getFontFingerprint()
+                    };
 
-        const fingerprint = {
-            ip: clientIP,
-            screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            language: navigator.language,
-            platform: navigator.platform,
-            userAgent: navigator.userAgent.substring(0, 100),
-            canvas: canvasFingerprint.substring(0, 50),
-            memory: navigator.deviceMemory || 'unknown',
-            cores: navigator.hardwareConcurrency || 'unknown',
-            touchSupport: 'ontouchstart' in window,
-            webgl: this.getWebGLFingerprint(),
-            fonts: this.getFontFingerprint()
-        };
+                    const fingerprintString = JSON.stringify(fingerprint);
+                    resolve(this.hashString(fingerprintString));
+                });
+            };
 
-        const fingerprintString = JSON.stringify(fingerprint);
-        return this.hashString(fingerprintString);
+            // Use requestIdleCallback if available, otherwise use setTimeout
+            if (window.requestIdleCallback) {
+                window.requestIdleCallback(runFingerprinting, { timeout: 2000 });
+            } else {
+                setTimeout(runFingerprinting, 100);
+            }
+        });
     }
 
     getWebGLFingerprint() {
